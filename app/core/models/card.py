@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import String, Boolean, DateTime
 
-from app.core.db.base import Base
+from app.core.models.base import Base
 
 class Card(Base):
     __tablename__ = "cards"
@@ -21,6 +21,6 @@ class Card(Base):
                                                  nullable=False)
 
 #не понял что значит код снизу
-    codes = relationship("Code", back_populates="card", cascade="all, delete-orphan")
+    #codes = relationship("Code", back_populates="card", cascade="all, delete-orphan")
     socials = relationship("CardSocial", back_populates="card", cascade="all, delete-orphan")
     assets = relationship("CardAsset", back_populates="card", cascade="all, delete-orphan")

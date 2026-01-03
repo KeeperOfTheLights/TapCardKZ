@@ -4,7 +4,7 @@ from sqlalchemy import String, Integer, ForeignKey, Enum as SQLEnum, Boolean
 from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db.base import Base
+from app.core.models.base import Base
 
 class SocialType(PyEnum):
     instagram = "instagram"

@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import String, Boolean, ForeignKey, BigInteger, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.db.base import Base
+from app.core.models.base import Base
 
 class Code(Base):
     __tablename__ = "codes"
