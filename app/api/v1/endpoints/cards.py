@@ -17,11 +17,11 @@ async def get_card(
 ) -> schemas.cards.CardOut:
     return await cards.get_card(id, session)
 
-@router.post("/", response_model=schemas.cards.CardOut)
+@router.post("/", response_model=schemas.cards.CardOutWithEditToken)
 async def create_card(
     request: Request,
     card: schemas.cards.CardIn,
     session: AsyncSession = Depends(get_session)
-) -> schemas.cards.CardOut:
+) -> schemas.cards.CardOutWithEditToken:
     return await cards.create_card(card, session)
 

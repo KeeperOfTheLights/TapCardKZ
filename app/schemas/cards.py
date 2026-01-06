@@ -79,3 +79,7 @@ class CardPatch(CardValidators):
 
 class CardOut(BaseCard):
     socials: list[BaseSocial]
+
+class CardOutWithEditToken(BaseCard):
+    socials: list[BaseSocial]
+    edit_token: str

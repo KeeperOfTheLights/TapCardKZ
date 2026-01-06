@@ -20,7 +20,7 @@ class Card(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow,
                                                  nullable=False)
 
-#не понял что значит код снизу
-    #codes = relationship("Code", back_populates="card", cascade="all, delete-orphan")
+#это для хэш кода
+    codes = relationship("Code", back_populates="card", cascade="all, delete-orphan")
     socials = relationship("CardSocial", back_populates="card", cascade="all, delete-orphan")
     assets = relationship("CardAsset", back_populates="card", cascade="all, delete-orphan")
