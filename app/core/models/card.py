@@ -3,6 +3,7 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import String, Boolean, DateTime
 
 from app.core.models.base import Base
+from sqlalchemy.ext.orderinglist import ordering_list
 
 class Card(Base):
     __tablename__ = "cards"
@@ -20,7 +21,12 @@ class Card(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow,
                                                  nullable=False)
 
-#не понял что значит код снизу
-    #codes = relationship("Code", back_populates="card", cascade="all, delete-orphan")
-    socials = relationship("CardSocial", back_populates="card", cascade="all, delete-orphan")
+    codes = relationship("Code", back_populates="card", cascade="all, delete-orphan")
+    socials = relationship(
+        "CardSocial",
+        back_populates="card",
+        order_by="CardSocial.order_id",
+        collection_class=ordering_list("order_id"),
+        cascade="all, delete-orphan"
+    )
     assets = relationship("CardAsset", back_populates="card", cascade="all, delete-orphan")
