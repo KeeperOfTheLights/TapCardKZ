@@ -1,86 +1,38 @@
 services:
-  # PostgreSQL Database
-  db:
-    image: postgres:16-alpine
-    container_name: tapcard_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tapcard
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # MinIO (S3-compatible storage)
-  minio:
-    image: minio/minio
-    container_name: tapcard_minio
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-
-  # FastAPI Backend
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    container_name: tapcard_backend
+  api:
+    build: .
+    container_name: tapcard_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
-    environment:
-      # Database
-      DB_NAME: tapcard
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_HOST: db
-      DB_PORT: 5432
-      # S3 (MinIO)
-      S3_ACCESS_KEY: minioadmin
-      S3_SECRET_KEY: minioadmin
-      S3_DOMAIN: http://minio:9000
-      BUCKET_NAME: tapcard
-      # Images
-      ALLOWED_IMAGE_TYPES: '["image/jpeg", "image/png", "image/webp"]'
-      IMAGE_MAX_SIZE: 5242880
-      IMAGE_EXPIRE_TIME: 3600
-      # JWT
-      JWT_SECRET: your-super-secret-key-change-in-production
-      JWT_ALGORITHM: HS256
-      JWT_EXPIRE_MINUTES: 1440
+    env_file:
+      - .env
+    volumes:
+      - .:/app
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./app:/app/app:ro
+    restart: unless-stopped
 
-  # React Frontend
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.frontend
-    container_name: tapcard_frontend
+  db:
+    image: postgres:18-alpine
+    container_name: tapcard_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "8080:80"
-    depends_on:
-      - backend
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   postgres_data:
-  minio_data:
