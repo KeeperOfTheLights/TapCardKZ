@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-
+from app.schemas.socials import SocialOut
 from pydantic import BaseModel, field_validator, Field, ConfigDict
 from app.schemas.socials import BaseSocial, SocialPatch
 
@@ -73,13 +73,12 @@ class CardPatch(CardValidators):
     website: str | None = None
     city: str | None = Field(None, min_length=3, max_length=20)
 
-    socials: list[SocialPatch] | None = None
-
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-class CardOut(BaseCard):
-    socials: list[BaseSocial]
 
-class CardOutWithEditToken(BaseCard):
-    socials: list[BaseSocial]
-    edit_token: str
+class CardOut(BaseCard):
+    socials: list[SocialOut]
+    avatar_link: str | None
+
+class CardOutOnCreate(CardOut):
+    code: str

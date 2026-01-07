@@ -1,1 +1,1 @@
-from . import cards, socials, codes
+from . import cards, socials, assets, codes

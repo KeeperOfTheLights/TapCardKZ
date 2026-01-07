@@ -17,7 +17,7 @@ class CardAsset(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     card_id: Mapped[int] = mapped_column(ForeignKey("cards.id", ondelete="CASCADE"), nullable=False, index=True)
     type: Mapped[AssetType] = mapped_column(SQLEnum(AssetType, name="asset_type"), nullable=False)
-    url: Mapped[str] = mapped_column(String, nullable=False)
+    file_name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     card = relationship("Card", back_populates="assets")

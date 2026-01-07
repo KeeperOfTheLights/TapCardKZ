@@ -30,5 +30,3 @@ def verify_access_token(token: str) -> dict | None:
         return payload
     except jwt.JWTError:
         return None
-
-

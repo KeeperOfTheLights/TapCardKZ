@@ -22,7 +22,7 @@ class CardSocial(Base):
     type: Mapped[SocialType] = mapped_column(SQLEnum(SocialType, name="social_type"), nullable=False)
     url: Mapped[str] = mapped_column(String, nullable=False)
     label: Mapped[str] = mapped_column(String, nullable=True)
-    order_id: Mapped[int] = mapped_column(Integer, default=0)
+    order_id: Mapped[int] = mapped_column(Integer)
     icon_asset_id: Mapped[int] = mapped_column(Integer, nullable=True)
     is_visible: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
