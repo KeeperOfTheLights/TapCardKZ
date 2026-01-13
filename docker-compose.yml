@@ -2,6 +2,9 @@ services:
   api:
     build: .
     container_name: tapcard_api
+    environment:
+      - PYTHONPATH=/app 
+      - PYTHONDONTWRITEBYTECODE=1
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
@@ -9,6 +12,7 @@ services:
       - .env
     volumes:
       - .:/app
+      - /usr/local/lib/python3.11/site-packages # <--- НЕ УДАЛЯТЬ (защита библиотек)
     depends_on:
       db:
         condition: service_healthy

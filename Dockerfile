@@ -1,19 +1,23 @@
-FROM python:3.12.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Устанавливаем системные зависимости для psycopg
+# 1. Системные зависимости
 RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
-    python3-dev \
-    build-essential \
- && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# 2. Обновление pip (убирает notice и фиксит ошибки разрешения зависимостей)
+RUN pip install --no-cache-dir --upgrade pip
 
-RUN pip install --no-cache-dir -r requirements.txt
+# 3. Подготовка к установке вашего пакета
+COPY pyproject.toml .
+RUN mkdir app && touch app/__init__.py
 
-COPY . .
+# 4. Установка зависимостей (включая aioboto3==13.2.0)
+RUN pip install --no-cache-dir .
+
+# 5. Копирование кода
+COPY app ./app
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
