@@ -44,13 +44,20 @@ class CardIn(CardValidators):
     description: str = Field(..., min_length=10, max_length=255, example="Software Engineer using Python and JavaScript")
     phone: str = Field(..., example="77715229969")
     email: str = Field(..., example="john.doe@example.com")
-    website: str = Field(..., example="https://johndoe.com")
+    website: str | None = Field(None, example="https://johndoe.com")
     city: str = Field(..., min_length=3, max_length=20, example="Almaty")
 
-    model_config = ConfigDict(from_attributes=True, extra="forbid")
+class CardPatch(CardValidators):
+    name: str | None = Field(None, min_length=3, max_length=20, example="Jason Statham")
+    title: str | None = Field(None, min_length=5, max_length=75, example="Actor")
+    description: str | None = Field(None, min_length=10, max_length=255, example="Actor from the movie Transporter")
+    phone: str | None = None
+    email: str | None = None
+    website: str | None = None
+    city: str | None = Field(None, min_length=3, max_length=20, example="Los Angeles")
 
-class BaseCard(BaseModel):
-    id: int
+class CardBase(BaseModel):
+    id: int 
     name: str
     title: str
     description: str    
@@ -62,21 +69,7 @@ class BaseCard(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True, extra="forbid")
-
-class CardPatch(CardValidators):
-    name: str | None = Field(None, min_length=3, max_length=20)
-    title: str | None = Field(None, min_length=5, max_length=75)
-    description: str | None = Field(None, min_length=10, max_length=255)
-    phone: str | None = None
-    email: str | None = None
-    website: str | None = None
-    city: str | None = Field(None, min_length=3, max_length=20)
-
-    model_config = ConfigDict(from_attributes=True, extra="forbid")
-
-
-class CardOut(BaseCard):
+class CardOut(CardBase):
     socials: list[SocialOut]
     avatar_link: str | None
 

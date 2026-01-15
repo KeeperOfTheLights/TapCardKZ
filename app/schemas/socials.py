@@ -7,6 +7,13 @@ class SocialIn(BaseModel):
     url: str
     label: str
 
+class SocialPatch(BaseModel):
+    type: SocialType | None = None
+    url: str | None = None
+    label: str | None = None
+    order_id: int | None = None
+    icon_asset_id: int | None = None
+
 class BaseSocial(BaseModel):
     id: int
     card_id: int
@@ -19,13 +26,6 @@ class BaseSocial(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
-
-class SocialPatch(BaseModel):
-    type: SocialType | None = None
-    url: str | None = None
-    label: str | None = None
-    order_id: int | None = None
-    icon_asset_id: int | None = None
 
 class SocialOut(BaseSocial):
     app_icon_link: str | None = None

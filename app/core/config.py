@@ -1,4 +1,3 @@
-from pydantic import field_validator # Проверьте, что этот импорт есть!
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Config(BaseSettings):
@@ -13,7 +12,6 @@ class Config(BaseSettings):
     S3_DOMAIN: str
     BUCKET_NAME: str
 
-    # Определяем как список строк
     ALLOWED_IMAGE_TYPES: list[str]
     IMAGE_MAX_SIZE: int
     IMAGE_EXPIRE_TIME: int
@@ -22,14 +20,16 @@ class Config(BaseSettings):
     JWT_ALGORITHM: str
     JWT_EXPIRE_MINUTES: int
 
+    LOG_DIR: str
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-    model_config = SettingsConfigDict(
+    model_config: SettingsConfigDict = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
-config = Config()
+config: Config = Config()

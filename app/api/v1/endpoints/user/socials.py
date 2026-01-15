@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, Request
-from app.api.v1.dependencies import get_session
-from app.services import socials
-from app import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.v1.dependencies import verify_access_token
 
-router = APIRouter(prefix="/socials")
+from app.api.v1.dependencies import get_session, verify_access_token
+from app import schemas, services
+
+router: APIRouter = APIRouter(prefix="/socials")
 
 @router.post("/", response_model=schemas.socials.SocialOut)
 async def create_social(
@@ -13,12 +12,12 @@ async def create_social(
     session: AsyncSession = Depends(get_session),
     token: dict = Depends(verify_access_token)
 ) -> schemas.socials.SocialOut:
-    return await socials.create_social(token["card_id"], social, session)
+    return await services.socials.create_social(card_id=token["card_id"], social=social, session=session)
 
-@router.delete("/{social_id}")
+@router.delete("/{social_id}/")
 async def delete_social(
     social_id: int,
     session: AsyncSession = Depends(get_session),
     token: dict = Depends(verify_access_token)
 ):
-    return await socials.delete_social(token["card_id"], social_id, session)
+    return await services.socials.delete_social(card_id=token["card_id"], social_id=social_id, session=session)

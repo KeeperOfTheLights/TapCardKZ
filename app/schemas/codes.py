@@ -1,19 +1,14 @@
 from pydantic import BaseModel, Field
 
 
-class CodeRedeemIn(BaseModel):
+class CodeIn(BaseModel):
     code: str = Field(..., min_length=1, example="abc123XYZ")
 
 
-class CodeRedeemOut(BaseModel):
+class CodeOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    card_id: int  # We return this so user knows which card they can edit
+    card_id: int
 
-
-class RegenerateCodeIn(BaseModel):
-    card_id: int = Field(..., ge=1, example=1)
-
-class CodeRegenerateOut(BaseModel):
-    code: str
+class CodeRegenerateIn(BaseModel):
     card_id: int

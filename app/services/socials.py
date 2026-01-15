@@ -1,6 +1,6 @@
 from app.core.models.social import CardSocial
 from app.core.models.card import Card
-from app import schemas
+from app import schemas, repo
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy import update   
@@ -9,19 +9,14 @@ from app.core.models.asset import CardAsset
 from sqlalchemy import select, delete 
 from sqlalchemy.orm import selectinload 
 
-async def create_social(
+async def create_social(   
+    *, 
     card_id: int,
     social: schemas.socials.SocialIn,
     session: AsyncSession,
 ) -> schemas.socials.SocialOut:
     # 1. Загружаем карту сразу вместе с соцсетями
-    stmt = (
-        select(Card)
-        .where(Card.id == card_id)
-        .options(selectinload(Card.socials))
-    )
-    result = await session.execute(stmt)
-    card = result.scalar_one_or_none()
+    card: Card | None = await repo.cards.get_card(card_id=card_id, session=session)
     
     if not card:
         raise HTTPException(
@@ -30,7 +25,7 @@ async def create_social(
         )
     
     # 2. Создаем объект (не передаем order_id, пусть ordering_list решит сам)
-    card_social = CardSocial(**social.model_dump())
+    card_social: CardSocial = CardSocial(**social.model_dump())
     
     # 3. Добавляем в список (БЕЗ await, это обычный метод списка)
     # Благодаря ordering_list, объекту автоматически назначится верный order_id
@@ -42,15 +37,9 @@ async def create_social(
     
     return schemas.socials.SocialOut.model_validate(card_social, from_attributes=True)
 
-async def delete_social(card_id: int, social_id: int, session: AsyncSession):
+async def delete_social(*, card_id: int, social_id: int, session: AsyncSession):
     # 1. Обязательно загружаем карточку вместе с её соцсетями
-    stmt = (
-        select(Card)
-        .where(Card.id == card_id)
-        .options(selectinload(Card.socials))
-    )
-    result = await session.execute(stmt)
-    card = result.scalar_one_or_none()
+    card: Card | None = await repo.cards.get_card(card_id=card_id, session=session)
     
     if not card:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Card not found")

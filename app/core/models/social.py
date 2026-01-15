@@ -9,7 +9,6 @@ from app.core.models.base import Base
 class SocialType(PyEnum):
     instagram = "instagram"
     telegram = "telegram"
-    whatsapp = "whatsapp"
     tiktok = "tiktok"
     youtube = "youtube"
     custom = "custom"
