@@ -12,3 +12,7 @@ class Out(BaseModel):
 
 class RegenerateIn(BaseModel):
     card_id: int = Field(..., ge=1)
+
+class RegenerateOut(BaseModel):
+    card_id: int
+    code: str

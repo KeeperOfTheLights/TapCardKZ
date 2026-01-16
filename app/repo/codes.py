@@ -13,7 +13,7 @@ async def add(
     await session.refresh(code)
     return code
 
-async def get_active_code(
+async def get_active(
     *, 
     code: str, 
     session: AsyncSession

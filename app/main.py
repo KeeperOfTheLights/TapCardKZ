@@ -7,7 +7,7 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from app.lifespan import lifespan
-from app.api.v1.router import router as v1_router
+from app.api.v1 import router as v1_router
 
 
 def create_app() -> FastAPI:

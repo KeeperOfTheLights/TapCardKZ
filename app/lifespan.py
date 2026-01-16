@@ -11,9 +11,9 @@ async def lifespan(app: FastAPI):
     # startup
     logger.info("App starting...")
     await db.set_up(app)
-    await s3.set_up(app)
+    s3.set_up(app)
     yield
     # shutdown
     logger.info("App shutting down...")
     await db.clean_up(app)
-    await s3.clean_up(app)
+    s3.clean_up(app)

@@ -1,11 +1,12 @@
 from typing import AsyncGenerator
 
+import jose
 from fastapi import Request, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.manager import AsyncDatabaseManager
-from app.utils.jwt import jwt
-from app.core.config import config
+from app import utils
+from app.core import config
 
 async def get_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """Retrieve the database session from the shared db_manager"""
@@ -18,9 +19,9 @@ def verify_access_token(request: Request) -> dict | None:
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     try:
-        payload = jwt.decode(token.split(" ")[1], config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
+        payload = utils.token.verify(token.split(" ")[1])
         return payload
-    except jwt.JWTError:
+    except jose.JWTError:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token")
 
 async def verify_admin(request: Request) -> dict | None:
@@ -29,7 +30,7 @@ async def verify_admin(request: Request) -> dict | None:
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     try:
-        payload = jwt.decode(token.split(" ")[1], config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
+        payload = jose.jwt.decode(token.split(" ")[1], config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
         return payload
-    except jwt.JWTError:
+    except jose.JWTError:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token")

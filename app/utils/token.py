@@ -1,13 +1,8 @@
+from app.core.config import config
 from datetime import datetime, timedelta
 from jose import jwt
 
-from app.core.config import config
-
-
-def create_access_token(card_id: int) -> str:
-    """
-    Create a JWT token that grants edit access to a specific card.
-    """
+def create(card_id: int) -> str:
     expire = datetime.utcnow() + timedelta(minutes=config.JWT_EXPIRE_MINUTES)
     
     payload = {
@@ -20,11 +15,7 @@ def create_access_token(card_id: int) -> str:
     return token
 
 
-def verify_access_token(token: str) -> dict | None:
-    """
-    Verify a JWT token and return the payload if valid.
-    Returns None if invalid or expired.
-    """
+def verify(token: str) -> dict | None:
     try:
         payload = jwt.decode(token, config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
         return payload

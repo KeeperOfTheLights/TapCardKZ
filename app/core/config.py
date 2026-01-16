@@ -24,6 +24,8 @@ class Config(BaseSettings):
 
     S3_AVATAR_TEMPLATE: str
     S3_ICON_TEMPLATE: str
+
+    CODE_LEN: int
     
     @property
     def DATABASE_URL(self) -> str:

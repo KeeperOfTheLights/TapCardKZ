@@ -36,7 +36,7 @@ async def upload(
     social: models.CardSocial | None = await repo.socials.get(card_id=card_id, social_id=social_id, session=session)
     if not social:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Social not found or does not belong to this card")
-    if not social.icon_asset_id:
+    if social.icon_asset_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="App icon already exists")
     file_name: str = config.S3_ICON_TEMPLATE.format(card_id=card_id, social_id=social_id)
     await utils.image_validator(card_id=card_id, file=file, session=session)
