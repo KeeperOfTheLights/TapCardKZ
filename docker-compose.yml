@@ -1,7 +1,10 @@
 services:
   api:
     build: .
-    container_name: tapcard_api
+    container_name: fastapi
+    environment:
+      - PYTHONPATH=/app 
+      - PYTHONDONTWRITEBYTECODE=1
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
@@ -15,24 +18,38 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:18-alpine
-    container_name: tapcard_db
+    image: postgres:15-alpine # 18 версии пока нет, лучше использовать стабильную 15 или 16
+    container_name: postgres
     env_file:
       - .env
     environment:
+      # Используем переменные напрямую из вашего .env файла
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
