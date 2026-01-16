@@ -3,7 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-async def get(*, card_id: int, session: AsyncSession) -> models.Card | None:
+async def get(
+    *, 
+    card_id: int, 
+    session: AsyncSession
+) -> models.Card | None:
     query = (
         select(models.Card)
         .where(models.Card.id == card_id)
@@ -13,7 +17,11 @@ async def get(*, card_id: int, session: AsyncSession) -> models.Card | None:
     card = result.scalar_one_or_none()
     return card
 
-async def add(*, card: models.Card, session: AsyncSession) -> models.Card:
+async def add(
+    *, 
+    card: models.Card, 
+    session: AsyncSession
+) -> models.Card:
     session.add(card)
     await session.commit()
     await session.refresh(card)
