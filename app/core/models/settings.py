@@ -2,11 +2,7 @@ from sqlalchemy import String, Boolean, ForeignKey, BigInteger, DateTime, Enum a
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.models.base import Base
-
-
-class Theme(PyEnum):
-    light = "light"
-    dark = "dark"
+from app.core import enums
 
 class Setting(Base):
     __tablename__ = "settings"
@@ -17,8 +13,8 @@ class Setting(Base):
         index=True
     )
 
-    theme: Mapped[Theme] = mapped_column(
-        SQLEnum(Theme, name="theme"),
+    theme: Mapped[enums.Theme] = mapped_column(
+        SQLEnum(enums.Theme, name="theme"),
         nullable=False,
         default=Theme.light
     )

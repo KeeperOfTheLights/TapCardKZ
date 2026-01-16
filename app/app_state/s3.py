@@ -4,7 +4,7 @@ from app.s3.client import S3Client
 from app.core.config import config
 from app.core.logger import logger
 
-async def setup_s3(app: FastAPI) -> None:
+async def set_up(app: FastAPI) -> None:
     logger.info("Initializing S3 client...")
     app.state.s3_client = S3Client(
         aws_access_key_id=config.S3_ACCESS_KEY,
@@ -14,5 +14,5 @@ async def setup_s3(app: FastAPI) -> None:
     )
 
 
-async def cleanup_s3(app: FastAPI) -> None:
+async def clean_up(app: FastAPI) -> None:
     logger.info("S3 client disposed")

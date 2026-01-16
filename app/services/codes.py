@@ -1,26 +1,23 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from fastapi import HTTPException, Response
 
-from app.core.models.code import Code
 from app import schemas, utils, repo
-from app.core.config import config
-from sqlalchemy import update
+from app.core import config, models
 from app.utils.code import generate_code    
 
 
-async def redeem_code(
+async def redeem(
     *,
-    payload: schemas.codes.CodeIn, 
+    payload: schemas.codes.In, 
     session: AsyncSession,
     response: Response
-) -> schemas.codes.CodeOut:
+) -> schemas.codes.Out:
     """
     Verify if the provided code exists and is active.
     If valid, return a JWT token for editing the card.
     """
     # 1. Find active code by code value (no card_id needed!)
-    code_record: Code | None = await repo.codes.is_active_code(code=payload.code, session=session)
+    code_record: models.Code | None = await repo.codes.get_active_code(code=payload.code, session=session)
 
     # 2. Check if code exists
     if not code_record:
@@ -35,26 +32,32 @@ async def redeem_code(
         value=f"Bearer {access_token}",
         expires=config.JWT_EXPIRE_MINUTES*60,
     )
-    return schemas.codes.CodeOut(
+    return schemas.codes.Out(
         access_token=access_token,
         token_type="bearer",
         card_id=code_record.card_id  # Return card_id so user knows which card
     )
 
-async def regenerate_code(
+async def regenerate(
     *,
-    payload: schemas.codes.CodeIn,
+    payload: schemas.codes.RegenerateIn,
     session: AsyncSession
-) -> schemas.codes.CodeOut:
-    await repo.codes.deactivate_codes(card_id=payload.card_id, session=session)
+) -> schemas.codes.Out:
+    card: models.Card | None = await repo.cards.get(card_id=payload.card_id, session=session)
+    if not card:
+        raise HTTPException(
+            status_code=404,
+            detail="Card not found"
+        )
+    await repo.codes.deactivate(card_id=payload.card_id, session=session)
     edit_token: str = generate_code()
-    code: Code = Code(
+    code: models.Code = models.Code(
         card_id=payload.card_id,
         code_hash=edit_token,
         is_active=True
     )
-    await repo.codes.add_code(code=code, session=session)
-    return schemas.codes.CodeOut(
+    await repo.codes.add(code=code, session=session)
+    return schemas.codes.Out(
         access_token=edit_token,
         token_type="bearer",
         card_id=payload.card_id

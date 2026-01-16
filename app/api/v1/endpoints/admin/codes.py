@@ -6,11 +6,10 @@ from app import schemas, services
 
 router: APIRouter = APIRouter(prefix="/codes")
 
-@router.post("/regenerate/", response_model=schemas.codes.CodeOut)
+@router.post("/regenerate/", response_model=schemas.codes.Out)
 async def regenerate_code(
-    request: Request,
-    payload: schemas.codes.CodeRegenerateIn,
+    payload: schemas.codes.RegenerateIn,
     session: AsyncSession = Depends(get_session),
     #admin: dict = Depends(verify_admin)
-) -> schemas.codes.CodeOut:
-    return await services.codes.regenerate_code(payload=payload, session=session)
+) -> schemas.codes.Out:
+    return await services.codes.regenerate(payload=payload, session=session)

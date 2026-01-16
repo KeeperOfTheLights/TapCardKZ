@@ -1,11 +1,12 @@
-import re
 from datetime import datetime
-from app.schemas.socials import SocialOut
+import re
+
 from pydantic import BaseModel, field_validator, Field, ConfigDict
-from app.schemas.socials import BaseSocial, SocialPatch
+
+from app.schemas.socials import Out as SocialOut
 
 
-class CardValidators(BaseModel):
+class Validators(BaseModel):
     phone: str | None = None
     email: str | None = None
     website: str | None = None
@@ -38,7 +39,7 @@ class CardValidators(BaseModel):
             raise ValueError("Website must start with http:// or https://")
         return v
 
-class CardIn(CardValidators):
+class In(Validators):
     name: str = Field(..., min_length=3, max_length=20, example="John Doe") 
     title: str = Field(..., min_length=5, max_length=75, example="Engineer")
     description: str = Field(..., min_length=10, max_length=255, example="Software Engineer using Python and JavaScript")
@@ -47,7 +48,7 @@ class CardIn(CardValidators):
     website: str | None = Field(None, example="https://johndoe.com")
     city: str = Field(..., min_length=3, max_length=20, example="Almaty")
 
-class CardPatch(CardValidators):
+class Patch(Validators):
     name: str | None = Field(None, min_length=3, max_length=20, example="Jason Statham")
     title: str | None = Field(None, min_length=5, max_length=75, example="Actor")
     description: str | None = Field(None, min_length=10, max_length=255, example="Actor from the movie Transporter")
@@ -56,7 +57,7 @@ class CardPatch(CardValidators):
     website: str | None = None
     city: str | None = Field(None, min_length=3, max_length=20, example="Los Angeles")
 
-class CardBase(BaseModel):
+class Base(BaseModel):
     id: int 
     name: str
     title: str
@@ -69,9 +70,11 @@ class CardBase(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-class CardOut(CardBase):
+    model_config = ConfigDict(from_attributes=True)
+
+class Out(Base):
     socials: list[SocialOut]
     avatar_link: str | None
 
-class CardOutOnCreate(CardOut):
+class OnCreate(Out):
     code: str

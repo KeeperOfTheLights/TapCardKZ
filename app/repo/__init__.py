@@ -1,3 +1,3 @@
-from . import cards, codes, assets
+from . import cards, codes, avatars, logos, socials
 
-__all__ = ["cards", "codes", "assets"]
+__all__ = ["cards", "codes", "avatars", "logos", "socials"]

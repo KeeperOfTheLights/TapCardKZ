@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from app.app_state import setup_db, cleanup_db, setup_s3, cleanup_s3
+from app.app_state import db, s3
 from app.core.config import config
 from app.core.logger import logger
 
@@ -10,10 +10,10 @@ from app.core.logger import logger
 async def lifespan(app: FastAPI):
     # startup
     logger.info("App starting...")
-    await setup_db(app)
-    await setup_s3(app)
+    await db.set_up(app)
+    await s3.set_up(app)
     yield
     # shutdown
     logger.info("App shutting down...")
-    await cleanup_db(app)
-    await cleanup_s3(app)
+    await db.clean_up(app)
+    await s3.clean_up(app)

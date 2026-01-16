@@ -1,23 +1,23 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime       
-from app.core.models.social import SocialType
+from app.core import enums
 
-class SocialIn(BaseModel):
-    type: SocialType
+class In(BaseModel):
+    type: enums.SocialType
     url: str
     label: str
 
-class SocialPatch(BaseModel):
-    type: SocialType | None = None
+class Patch(BaseModel):
+    type: enums.SocialType | None = None
     url: str | None = None
     label: str | None = None
     order_id: int | None = None
     icon_asset_id: int | None = None
 
-class BaseSocial(BaseModel):
+class Base(BaseModel):
     id: int
     card_id: int
-    type: SocialType
+    type: enums.SocialType
     url: str
     label: str
     order_id: int
@@ -27,5 +27,5 @@ class BaseSocial(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class SocialOut(BaseSocial):
+class Out(Base):
     app_icon_link: str | None = None
