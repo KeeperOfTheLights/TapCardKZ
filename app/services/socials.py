@@ -45,5 +45,6 @@ async def delete(
     is_deleted: bool = await repo.socials.delete(card=card, social_id=social_id, session=session)
     
     if social.icon_asset_id:
-        await s3_client.delete_social_asset(card_id=card_id, social_id=social_id)
+        file_name: str = config.S3_ICON_TEMPLATE.format(card_id=card_id, social_id=social_id)
+        await s3_client.delete_asset(file_name=file_name)
     

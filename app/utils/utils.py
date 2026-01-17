@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import models, config
+from typing import Type
+from pydantic import BaseModel
 
 async def image_validator(
     *, 
@@ -28,3 +30,15 @@ async def image_validator(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Not allowed file type, allowed types: {', '.join(allowed_types)}"
         )
+
+
+def build_schema(
+    schema_class: Type[BaseModel], 
+    *models: BaseModel, 
+    **extra_fields
+) -> BaseModel:
+    data = {}
+    for model in models:
+        data.update(model.model_dump())
+    data.update(extra_fields)
+    return schema_class(**data)

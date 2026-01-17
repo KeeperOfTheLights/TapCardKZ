@@ -1,4 +1,4 @@
-from app.core import models
+from app.core import models, config
 from app import repo, schemas
 from app.s3 import S3Client
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ async def get(
     s3_client: S3Client, 
     session: AsyncSession
 ) -> str | None:
-    filename: str = f"avatar-{card_id}.png"
+    filename: str = config.S3_AVATAR_TEMPLATE.format(card_id=card_id)
     asset: models.CardAsset | None = await repo.avatars.get(card_id=card_id, session=session)
     if not asset:
         return None 
@@ -24,7 +24,7 @@ async def upload(
     file: UploadFile, 
     session: AsyncSession
 ) -> schemas.assets.Out:
-    file_name: str = f"avatar-{card_id}.png"
+    file_name: str = config.S3_AVATAR_TEMPLATE.format(card_id=card_id)
     await utils.image_validator(card_id=card_id, file=file, session=session)
     asset: models.CardAsset = await repo.avatars.add(card_id=card_id, file_name=file_name, session=session)
 

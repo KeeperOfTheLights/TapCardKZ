@@ -1,4 +1,11 @@
 import secrets
+import hashlib
 
-def generate_code() -> str:
-    return secrets.token_urlsafe(8)[:10]
+from app.core.config import config
+
+
+def generate() -> str:
+    return secrets.token_urlsafe(config.CODE_LEN)
+
+def encode(code: str) -> str:
+    return hashlib.sha256(code.encode()).hexdigest()

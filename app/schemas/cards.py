@@ -73,7 +73,7 @@ class Base(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class Out(Base):
-    socials: list[SocialOut]
+    socials: list[SocialOut] = []
     avatar_link: str | None
 
 class OnCreate(Out):

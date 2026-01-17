@@ -19,13 +19,13 @@ async def get_card(
         session=session
     )
 
-@router.patch("/{id}/", response_model=schemas.cards.Out)
+@router.patch("/{id}/", response_model=schemas.cards.Base)
 async def update_card(
     request: Request,
     card: schemas.cards.Patch,
     token: dict = Depends(verify_access_token),
     session: AsyncSession = Depends(get_session)
-) -> schemas.cards.Out:
+) -> schemas.cards.Base:
     return await services.cards.update(
         card_id=token["card_id"],
         card_update=card,

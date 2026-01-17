@@ -22,6 +22,11 @@ class Config(BaseSettings):
 
     LOG_DIR: str
 
+    S3_AVATAR_TEMPLATE: str
+    S3_ICON_TEMPLATE: str
+
+    CODE_LEN: int
+    
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"

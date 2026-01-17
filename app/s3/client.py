@@ -40,9 +40,9 @@ class S3Client:
             logger.info(f"URL for file {object_name} generated")
             return url
 
-    async def delete_social_asset(self, card_id: int, social_id: int) -> None:
+    async def delete_asset(self, file_name: str) -> None:
         async with self.get_client() as client:
-            await client.delete_object(Bucket=self.bucket_name, Key=f"app_icon-{card_id}-{social_id}.png")
-        logger.info(f"Aseests of social {social_id} of card {card_id} deleted")
+            await client.delete_object(Bucket=self.bucket_name, Key=file_name)
+        logger.info(f"File {file_name} deleted")
         
           

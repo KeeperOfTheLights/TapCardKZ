@@ -8,8 +8,8 @@ router: APIRouter = APIRouter(prefix="/codes")
 
 @router.post("/redeem/", response_model=schemas.codes.Out)
 async def redeem_code(
-    payload: schemas.codes.In,
+    code: schemas.codes.In,
     response: Response,
     session: AsyncSession = Depends(get_session)
 ) -> schemas.codes.Out:
-    return await services.codes.redeem(payload=payload, session=session, response=response)
+    return await services.codes.redeem(code=code, session=session, response=response)
