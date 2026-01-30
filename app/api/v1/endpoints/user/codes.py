@@ -10,11 +10,11 @@ router: APIRouter = APIRouter(prefix="/codes")
 @router.post(
     "/redeem/", 
     response_model=schemas.codes.Out,
-    summary="Активировать код",
-    description="Проверяет код и возвращает JWT токен для редактирования карточки. "
-                "Токен устанавливается в cookie 'Authorization'.",
+    summary="Redeem code",
+    description="Validates code and returns JWT token for card editing. "
+                "Token is set in 'Authorization' cookie.",
     responses={
-        401: {"description": "Неверный код или код не найден"}
+        401: {"description": "Invalid code or code not found"}
     }
 )
 async def redeem_code(
@@ -23,11 +23,11 @@ async def redeem_code(
     session: AsyncSession = Depends(get_session)
 ) -> schemas.codes.Out:
     """
-    Активировать код и получить токен.
+    Redeem code and get token.
     
-    - **code**: код активации, полученный при создании карточки
+    - **code**: activation code received when creating card
     
-    После успешной активации токен устанавливается в cookie.
+    After successful redemption, token is set in cookie.
     """
     hashed_code: str = utils.code.encode(code.code)
     

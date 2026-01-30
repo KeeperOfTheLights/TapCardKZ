@@ -1,12 +1,10 @@
 """
-Валидаторы для ассетов (изображений).
+Asset validators (images).
 
-Проверяют размер и тип загружаемых файлов.
+Check file size and type for uploads.
 """
-# Third-party
 from fastapi import HTTPException, UploadFile, status
 
-# Local
 from app.core import config
 
 
@@ -16,16 +14,16 @@ def validate_image(
     allowed_types: list[str] = config.ALLOWED_IMAGE_TYPES
 ) -> None:
     """
-    Валидация файла изображения по размеру и типу.
+    Validate image file by size and type.
     
     Args:
-        file: Загружаемый файл
-        max_size: Максимальный размер в байтах (по умолчанию из конфига)
-        allowed_types: Разрешённые MIME-типы (по умолчанию из конфига)
+        file: Uploaded file
+        max_size: Maximum size in bytes (default from config)
+        allowed_types: Allowed MIME types (default from config)
         
     Raises:
-        HTTPException: 413 если файл слишком большой
-        HTTPException: 400 если тип файла не разрешён
+        HTTPException: 413 if file too large
+        HTTPException: 400 if file type not allowed
     """
     if file.size > max_size:
         raise HTTPException(

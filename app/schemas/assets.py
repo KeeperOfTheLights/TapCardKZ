@@ -1,46 +1,43 @@
 """
-Схемы для работы с ассетами (изображениями).
+Asset schemas (images).
 
-Используются для аватаров и иконок социальных сетей.
+Used for avatars and social network icons.
 """
-# Standard Library
 from datetime import datetime
 
-# Third-party
 from pydantic import BaseModel, ConfigDict, Field
 
-# Local
 from app.core import enums
 
     
 class In(BaseModel):
-    """Схема для загрузки ассета."""
+    """Schema for asset upload."""
     
     card_id: int = Field(
         ..., 
-        description="ID карточки",
+        description="Card ID",
         json_schema_extra={"example": 1}
     )
     type: enums.AssetType = Field(
         ..., 
-        description="Тип ассета (avatar/icon)",
+        description="Asset type (avatar/icon)",
         json_schema_extra={"example": "avatar"}
     )
 
 
 class Base(BaseModel):
-    """Базовая схема ассета."""
+    """Base asset schema."""
     
     model_config = ConfigDict(from_attributes=True)
     
-    id: int = Field(..., description="ID ассета")
-    card_id: int = Field(..., description="ID карточки")
-    type: enums.AssetType = Field(..., description="Тип ассета")
-    file_name: str = Field(..., description="Имя файла в S3")
-    created_at: datetime = Field(..., description="Дата загрузки")
+    id: int = Field(..., description="Asset ID")
+    card_id: int = Field(..., description="Card ID")
+    type: enums.AssetType = Field(..., description="Asset type")
+    file_name: str = Field(..., description="S3 file name")
+    created_at: datetime = Field(..., description="Upload date")
 
 
 class Out(Base):
-    """Схема ответа при загрузке ассета."""
+    """Response schema for asset upload."""
     
     pass

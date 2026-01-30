@@ -10,12 +10,12 @@ router: APIRouter = APIRouter(prefix="/codes")
 @router.post(
     "/regenerate/", 
     response_model=schemas.codes.RegenerateOut,
-    summary="Регенерировать код",
-    description="Деактивирует текущий код и создаёт новый. Только для администраторов.",
+    summary="Regenerate code",
+    description="Deactivates current code and creates a new one. Admin only.",
     responses={
-        401: {"description": "Не авторизован"},
-        403: {"description": "Недостаточно прав"},
-        404: {"description": "Карточка не найдена"}
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Card not found"}
     }
 )
 async def regenerate_code(
@@ -24,11 +24,11 @@ async def regenerate_code(
     # admin: dict = Depends(verify_admin)
 ) -> schemas.codes.RegenerateOut:
     """
-    Регенерировать код активации для карточки.
+    Regenerate activation code for a card.
     
-    - **card_id**: ID карточки для регенерации кода
+    - **card_id**: Card ID to regenerate code for
     
-    Старый код будет деактивирован, новый возвращён в ответе.
+    Old code will be deactivated, new code returned in response.
     """
     card = await validators.cards.require_card(
         card_id=code.card_id, 

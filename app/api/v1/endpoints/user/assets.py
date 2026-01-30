@@ -11,28 +11,28 @@ router: APIRouter = APIRouter(prefix="/assets")
 @router.post(
     "/avatar/", 
     response_model=schemas.assets.Out,
-    summary="Загрузить аватар",
-    description="Загружает или обновляет аватар карточки. "
-                "Поддерживаемые форматы: JPEG, PNG. Максимальный размер: 5MB.",
+    summary="Upload avatar",
+    description="Uploads or updates card avatar. "
+                "Supported formats: JPEG, PNG. Max size: 5MB.",
     responses={
-        400: {"description": "Недопустимый тип файла"},
-        401: {"description": "Не авторизован"},
-        404: {"description": "Карточка не найдена"},
-        413: {"description": "Файл слишком большой"}
+        400: {"description": "Invalid file type"},
+        401: {"description": "Not authenticated"},
+        404: {"description": "Card not found"},
+        413: {"description": "File too large"}
     }
 )
 async def upload_avatar(
     request: Request, 
-    file: UploadFile = File(..., description="Файл изображения (JPEG, PNG)"),
+    file: UploadFile = File(..., description="Image file (JPEG, PNG)"),
     token: dict = Depends(verify_access_token),
     session: AsyncSession = Depends(get_session)
 ) -> schemas.assets.Out:
     """
-    Загрузить аватар для карточки.
+    Upload avatar for card.
     
-    - **file**: изображение в формате JPEG или PNG
+    - **file**: image in JPEG or PNG format
     
-    Перезаписывает существующий аватар, если он есть.
+    Overwrites existing avatar if present.
     """
     validators.assets.validate_image(file)
     
@@ -54,30 +54,30 @@ async def upload_avatar(
 @router.post(
     "/logo/", 
     response_model=schemas.assets.Out,
-    summary="Загрузить иконку соцсети",
-    description="Загружает кастомную иконку для социальной сети. "
-                "У соцсети не должно быть существующей иконки.",
+    summary="Upload social icon",
+    description="Uploads custom icon for social link. "
+                "Social link must not have an existing icon.",
     responses={
-        400: {"description": "Недопустимый тип файла или иконка уже существует"},
-        401: {"description": "Не авторизован"},
-        404: {"description": "Социальная сеть не найдена"},
-        413: {"description": "Файл слишком большой"}
+        400: {"description": "Invalid file type or icon already exists"},
+        401: {"description": "Not authenticated"},
+        404: {"description": "Social link not found"},
+        413: {"description": "File too large"}
     }
 )
 async def upload_logo(
     request: Request, 
-    social_id: int = Form(..., ge=1, description="ID социальной сети"),
-    file: UploadFile = File(..., description="Файл изображения (JPEG, PNG)"),
+    social_id: int = Form(..., ge=1, description="Social link ID"),
+    file: UploadFile = File(..., description="Image file (JPEG, PNG)"),
     token: dict = Depends(verify_access_token),
     session: AsyncSession = Depends(get_session)
 ) -> schemas.assets.Out:
     """
-    Загрузить кастомную иконку для социальной сети.
+    Upload custom icon for social link.
     
-    - **social_id**: ID социальной сети
-    - **file**: изображение в формате JPEG или PNG
+    - **social_id**: social link ID
+    - **file**: image in JPEG or PNG format
     
-    Нельзя загрузить иконку, если она уже существует.
+    Cannot upload icon if one already exists.
     """
     validators.assets.validate_image(file)
     

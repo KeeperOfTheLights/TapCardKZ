@@ -1,25 +1,25 @@
 """
-Модуль валидаторов для Taply API.
+Validators module for Taply API.
 
-Содержит слой проверок, который отделяет HTTP-ошибки от бизнес-логики.
-Валидаторы вызываются из роутеров перед сервисами.
+Contains validation layer that separates HTTP errors from business logic.
+Validators are called from routers before services.
 
-Модули:
-    - cards: Проверка существования карточек
-    - socials: Проверка социальных сетей и иконок
-    - codes: Проверка кодов активации
-    - assets: Валидация загружаемых изображений
-    - auth: Проверка JWT токенов
+Modules:
+    - cards: Card existence checks
+    - socials: Social link and icon checks
+    - codes: Activation code checks
+    - assets: Image file validation
+    - auth: JWT token verification
 
-Пример использования:
+Usage example:
     ```python
     from app import validators
     
-    # В роутере (до вызова сервиса):
+    # In router (before calling service):
     card = await validators.cards.require_card(card_id=1, session=session)
     validators.assets.validate_image(file)
     
-    # Затем вызов сервиса с провалидированными данными:
+    # Then call service with validated data:
     result = await services.cards.get(card=card, ...)
     ```
 """

@@ -1,79 +1,67 @@
 """
-Сервис для работы с кодами активации.
+Activation code service.
 
-Содержит бизнес-логику активации и регенерации кодов.
+Contains business logic for code redemption and regeneration.
 """
-# Standard Library
-import hashlib
-import secrets
-
-# Third-party
 from fastapi import Response
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Local
 from app import repo, schemas, utils
-from app.core import config, models
+from app.core import models
+from app.core.config import config
 
 
 async def redeem(
-    *,
     code_record: models.Code, 
     response: Response
 ) -> schemas.codes.Out:
     """
-    Активировать код и вернуть JWT токен.
+    Redeem code and return JWT token.
     
     Args:
-        code_record: Провалидированный объект кода
-        response: HTTP ответ для установки cookie
+        code_record: Validated code object
+        response: HTTP response for setting cookie
         
     Returns:
-        schemas.codes.Out: Токен и ID карточки
+        schemas.codes.Out: Token and card ID
     """
-    access_token: str = utils.token.create(card_id=code_record.card_id)
+    token: str = utils.token.create(card_id=code_record.card_id)
     
     response.set_cookie(
         key="Authorization",
-        value=f"Bearer {access_token}",
-        expires=config.JWT_EXPIRE_MINUTES * 60,
+        value=f"Bearer {token}",
+        expires=config.JWT_EXPIRE_MINUTES * 60
     )
     
     return schemas.codes.Out(
-        access_token=access_token,
+        access_token=token,
         token_type="bearer",
         card_id=code_record.card_id
     )
 
 
 async def regenerate(
-    *,
-    card: models.Card,
+    card: models.Card, 
     session: AsyncSession
 ) -> schemas.codes.RegenerateOut:
     """
-    Регенерировать код для карточки.
+    Regenerate code for card.
     
     Args:
-        card: Провалидированный объект карточки
-        session: Сессия БД
+        card: Validated card object
+        session: Database session
         
     Returns:
-        schemas.codes.RegenerateOut: Новый код активации
+        schemas.codes.RegenerateOut: New activation code
     """
-    await repo.codes.deactivate(card_id=card.id, session=session)
+    code: str = utils.code.generate(config.CODE_LEN)
+    hashed_code: str = utils.code.encode(code)
     
-    token: str = secrets.token_urlsafe(config.CODE_LEN)
-    hashed_token: str = hashlib.sha256(token.encode()).hexdigest()
-    
-    code: models.Code = models.Code(
-        card_id=card.id,
-        code_hash=hashed_token,
-        is_active=True
-    )
-    await repo.codes.add(code=code, session=session)
+    await repo.codes.deactivate_all(card_id=card.id, session=session)
+    await repo.codes.create(code=hashed_code, card_id=card.id, session=session)
     
     return schemas.codes.RegenerateOut(
         card_id=card.id,
-        code=token
+        code=code
     )

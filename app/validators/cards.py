@@ -1,30 +1,28 @@
 """
-Валидаторы для карточек.
+Card validators.
 
-Проверяют существование карточки и возвращают её или выбрасывают HTTPException.
+Check card existence and return it or raise HTTPException.
 """
-# Third-party
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Local
 from app import repo
 from app.core import models
 
 
 async def require_card(card_id: int, session: AsyncSession) -> models.Card:
     """
-    Проверяет существование карточки.
+    Verify card existence.
     
     Args:
-        card_id: ID карточки для проверки
-        session: Сессия БД
+        card_id: Card ID to check
+        session: Database session
         
     Returns:
-        models.Card: Найденная карточка
+        models.Card: Found card
         
     Raises:
-        HTTPException: 404 если карточка не найдена
+        HTTPException: 404 if card not found
     """
     card: models.Card | None = await repo.cards.get(card_id=card_id, session=session)
     if not card:

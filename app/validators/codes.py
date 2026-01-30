@@ -1,30 +1,28 @@
 """
-Валидаторы для кодов активации.
+Activation code validators.
 
-Проверяют существование и активность кода.
+Check code existence and active status.
 """
-# Third-party
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Local
 from app import repo
 from app.core import models
 
 
 async def require_active_code(code_hash: str, session: AsyncSession) -> models.Code:
     """
-    Проверяет существование активного кода.
+    Verify active code existence.
     
     Args:
-        code_hash: Хеш кода для проверки
-        session: Сессия БД
+        code_hash: Code hash to check
+        session: Database session
         
     Returns:
-        models.Code: Найденный активный код
+        models.Code: Found active code
         
     Raises:
-        HTTPException: 401 если код не найден или неактивен
+        HTTPException: 401 if code not found or inactive
     """
     code: models.Code | None = await repo.codes.get_active(
         code=code_hash, 

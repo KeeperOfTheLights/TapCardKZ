@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Path, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app import schemas, services, validators
 from app.api.v1.dependencies import get_session, verify_access_token
 
@@ -9,21 +10,21 @@ router: APIRouter = APIRouter(prefix="/cards")
 @router.get(
     "/{id}/", 
     response_model=schemas.cards.Out,
-    summary="Получить карточку",
-    description="Возвращает полную информацию о карточке, включая социальные сети и аватар.",
+    summary="Get card",
+    description="Returns full card information including social links and avatar.",
     responses={
-        404: {"description": "Карточка не найдена"}
+        404: {"description": "Card not found"}
     }
 )
 async def get_card(
     request: Request,
-    id: int = Path(..., ge=1, description="ID карточки"),
+    id: int = Path(..., ge=1, description="Card ID"),
     session: AsyncSession = Depends(get_session)
 ) -> schemas.cards.Out:
     """
-    Получить карточку по ID.
+    Get card by ID.
     
-    - **id**: уникальный идентификатор карточки
+    - **id**: unique card identifier
     """
     card = await validators.cards.require_card(card_id=id, session=session)
     
@@ -37,12 +38,12 @@ async def get_card(
 @router.patch(
     "/{id}/", 
     response_model=schemas.cards.Base,
-    summary="Обновить карточку",
-    description="Частичное обновление данных карточки. Требуется авторизация.",
+    summary="Update card",
+    description="Partial card update. Requires authorization.",
     responses={
-        401: {"description": "Не авторизован"},
-        403: {"description": "Недействительный токен"},
-        404: {"description": "Карточка не найдена"}
+        401: {"description": "Not authenticated"},
+        403: {"description": "Invalid token"},
+        404: {"description": "Card not found"}
     }
 )
 async def update_card(
@@ -52,10 +53,10 @@ async def update_card(
     session: AsyncSession = Depends(get_session)
 ) -> schemas.cards.Base:
     """
-    Обновить карточку (PATCH).
+    Update card (PATCH).
     
-    Передайте только те поля, которые хотите изменить.
-    Авторизация через cookie: Authorization.
+    Pass only fields you want to change.
+    Authorization via cookie: Authorization.
     """
     card_obj = await validators.cards.require_card(
         card_id=token["card_id"], 

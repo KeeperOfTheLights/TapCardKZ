@@ -1,17 +1,14 @@
 """
-Зависимости для API v1.
+API v1 dependencies.
 
-Содержит общие dependency functions для роутеров.
+Contains common dependency functions for routers.
 """
-# Standard Library
 from typing import AsyncGenerator
 
-# Third-party
 import jose
 from fastapi import HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Local
 from app import utils
 from app.core import config
 from app.core.manager import AsyncDatabaseManager
@@ -19,13 +16,13 @@ from app.core.manager import AsyncDatabaseManager
 
 async def get_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """
-    Получить сессию базы данных.
+    Get database session.
     
     Args:
-        request: HTTP запрос с app state
+        request: HTTP request with app state
         
     Yields:
-        AsyncSession: Сессия для работы с БД
+        AsyncSession: Session for database operations
     """
     db_manager: AsyncDatabaseManager = request.app.state.db_manager
     async for session in db_manager.get_async_session():
@@ -34,17 +31,17 @@ async def get_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
 
 def verify_access_token(request: Request) -> dict | None:
     """
-    Проверить access token из cookie.
+    Verify access token from cookie.
     
     Args:
-        request: HTTP запрос
+        request: HTTP request
         
     Returns:
-        dict: Payload токена с card_id
+        dict: Token payload with card_id
         
     Raises:
-        HTTPException: 401 если токен отсутствует
-        HTTPException: 403 если токен недействителен
+        HTTPException: 401 if token is missing
+        HTTPException: 403 if token is invalid
     """
     token: str | None = request.cookies.get("Authorization")
     if not token:
@@ -64,17 +61,17 @@ def verify_access_token(request: Request) -> dict | None:
 
 async def verify_admin(request: Request) -> dict | None:
     """
-    Проверить admin token из cookie.
+    Verify admin token from cookie.
     
     Args:
-        request: HTTP запрос
+        request: HTTP request
         
     Returns:
-        dict: Payload токена администратора
+        dict: Admin token payload
         
     Raises:
-        HTTPException: 401 если токен отсутствует
-        HTTPException: 403 если токен недействителен
+        HTTPException: 401 if token is missing
+        HTTPException: 403 if token is invalid
     """
     # TODO: implement admin verification
     token: str | None = request.cookies.get("Authorization")

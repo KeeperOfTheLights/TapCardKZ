@@ -10,11 +10,11 @@ router: APIRouter = APIRouter(prefix="/socials")
 @router.post(
     "/", 
     response_model=schemas.socials.Out,
-    summary="Добавить социальную сеть",
-    description="Добавляет новую социальную сеть к карточке. Требуется авторизация.",
+    summary="Add social link",
+    description="Adds new social link to card. Requires authorization.",
     responses={
-        401: {"description": "Не авторизован"},
-        404: {"description": "Карточка не найдена"}
+        401: {"description": "Not authenticated"},
+        404: {"description": "Card not found"}
     }
 )
 async def create_social(
@@ -23,11 +23,11 @@ async def create_social(
     token: dict = Depends(verify_access_token)
 ) -> schemas.socials.Out:
     """
-    Добавить социальную сеть.
+    Add social link.
     
-    - **type**: тип социальной сети (telegram, instagram, etc.)
-    - **url**: ссылка на профиль
-    - **label**: отображаемый текст
+    - **type**: social network type (telegram, instagram, etc.)
+    - **url**: profile URL
+    - **label**: display text
     """
     card = await validators.cards.require_card(
         card_id=token["card_id"], 
@@ -44,25 +44,25 @@ async def create_social(
 @router.delete(
     "/{social_id}/", 
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Удалить социальную сеть",
-    description="Удаляет социальную сеть и связанную иконку. Требуется авторизация.",
+    summary="Delete social link",
+    description="Deletes social link and associated icon. Requires authorization.",
     responses={
-        401: {"description": "Не авторизован"},
-        404: {"description": "Социальная сеть не найдена"}
+        401: {"description": "Not authenticated"},
+        404: {"description": "Social link not found"}
     }
 )
 async def delete_social(
     request: Request,
-    social_id: int = Path(..., ge=1, description="ID социальной сети"),
+    social_id: int = Path(..., ge=1, description="Social link ID"),
     session: AsyncSession = Depends(get_session),
     token: dict = Depends(verify_access_token)
 ):
     """
-    Удалить социальную сеть.
+    Delete social link.
     
-    - **social_id**: ID социальной сети для удаления
+    - **social_id**: ID of social link to delete
     
-    Также удаляет привязанную иконку из S3.
+    Also deletes associated icon from S3.
     """
     card = await validators.cards.require_card(
         card_id=token["card_id"], 

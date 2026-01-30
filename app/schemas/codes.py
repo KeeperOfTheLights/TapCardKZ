@@ -1,44 +1,43 @@
 """
-Схемы для работы с кодами активации.
+Activation code schemas.
 
-Коды используются для аутентификации владельца карточки.
+Codes are used for card owner authentication.
 """
-# Third-party
 from pydantic import BaseModel, Field
 
 
 class In(BaseModel):
-    """Схема для активации кода (получение токена)."""
+    """Schema for code redemption (getting token)."""
     
     code: str = Field(
         ..., 
         min_length=1, 
-        description="Код активации для входа",
+        description="Activation code for login",
         json_schema_extra={"example": "abc123XYZ"}
     )
 
 
 class Out(BaseModel):
-    """Схема ответа при успешной активации кода."""
+    """Response schema for successful code redemption."""
     
-    access_token: str = Field(..., description="JWT токен для авторизации")
-    token_type: str = Field(default="bearer", description="Тип токена")
-    card_id: int = Field(..., description="ID карточки, к которой привязан код")
+    access_token: str = Field(..., description="JWT token for authorization")
+    token_type: str = Field(default="bearer", description="Token type")
+    card_id: int = Field(..., description="Card ID linked to the code")
 
 
 class RegenerateIn(BaseModel):
-    """Схема запроса на регенерацию кода (только для админов)."""
+    """Request schema for code regeneration (admin only)."""
     
     card_id: int = Field(
         ..., 
         ge=1, 
-        description="ID карточки для регенерации кода",
+        description="Card ID to regenerate code for",
         json_schema_extra={"example": 1}
     )
 
 
 class RegenerateOut(BaseModel):
-    """Схема ответа при регенерации кода."""
+    """Response schema for code regeneration."""
     
-    card_id: int = Field(..., description="ID карточки")
-    code: str = Field(..., description="Новый код активации")
+    card_id: int = Field(..., description="Card ID")
+    code: str = Field(..., description="New activation code")

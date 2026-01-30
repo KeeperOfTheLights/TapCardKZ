@@ -1,31 +1,27 @@
 """
-Утилиты общего назначения.
+General utilities.
 """
-# Standard Library
-from typing import Type
-
-# Third-party
 from pydantic import BaseModel
 
 
-def build_schema(
-    schema_class: Type[BaseModel], 
-    *models: BaseModel, 
-    **extra_fields
-) -> BaseModel:
+def build_schema(schema_class: type[BaseModel], *models, **extra_fields) -> BaseModel:
     """
-    Собрать схему из нескольких моделей и дополнительных полей.
+    Build schema from multiple models and additional fields.
     
     Args:
-        schema_class: Класс схемы для создания
-        *models: Модели для объединения
-        **extra_fields: Дополнительные поля
+        schema_class: Schema class to create
+        *models: Models to combine
+        **extra_fields: Additional fields
         
     Returns:
-        BaseModel: Экземпляр schema_class
+        BaseModel: Instance of schema_class
     """
-    data = {}
+    combined = {}
     for model in models:
-        data.update(model.model_dump())
-    data.update(extra_fields)
-    return schema_class(**data)
+        if hasattr(model, "__dict__"):
+            combined.update({
+                k: v for k, v in model.__dict__.items() 
+                if not k.startswith("_")
+            })
+    combined.update(extra_fields)
+    return schema_class(**combined)

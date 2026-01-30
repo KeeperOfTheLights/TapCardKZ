@@ -1,80 +1,97 @@
 """
-Сервис для работы с логотипами социальных сетей.
+Social link icon service.
 
-Содержит бизнес-логику получения и загрузки иконок.
+Contains business logic for getting and uploading icons.
 """
-# Third-party
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Local
 from app import repo, schemas
-from app.core import config, models
-from app.s3 import S3Client
+from app.core import enums, models
+from app.core.config import config
+from app.s3.client import S3Client
 
 
-async def get(
-    *,
+async def get_all(
     card_id: int, 
     s3_client: S3Client, 
     session: AsyncSession
 ) -> dict[int, str]:
     """
-    Получить все логотипы для карточки.
+    Get all icons for card.
     
     Args:
-        card_id: ID карточки
-        s3_client: Клиент S3 для получения URL
-        session: Сессия БД
+        card_id: Card ID
+        s3_client: S3 client for getting URLs
+        session: Database session
         
     Returns:
-        dict[int, str]: Словарь {order_id: url}
+        dict[int, str]: Mapping of social_id to icon URL
     """
-    assets: list[models.CardAsset] = await repo.logos.get(
+    icons: list[models.Asset] = await repo.logos.get_all(
         card_id=card_id, 
         session=session
     )
     
-    if not assets:
-        return {}
+    socials: list[models.CardSocial] = await repo.socials.get_all(
+        card_id=card_id, 
+        session=session
+    )
     
-    return {
-        asset.order_id: await s3_client.get_object_url(asset.file_name)
-        for asset in assets
-    }
+    icon_dict: dict[int, str] = {}
+    for icon in icons:
+        social = next(
+            (s for s in socials if s.icon_asset_id == icon.id), 
+            None
+        )
+        if social:
+            icon_dict[social.id] = s3_client.create_presigned_url(
+                object_name=config.S3_ICON_TEMPLATE.format(
+                    card_id=card_id,
+                    file_name=icon.file_name
+                ),
+                expires_in=config.IMAGE_EXPIRE_TIME
+            )
+    
+    return icon_dict
 
 
 async def upload(
-    *,
-    social: models.CardSocial,
-    s3_client: S3Client,
+    social: models.CardSocial, 
+    s3_client: S3Client, 
     file: UploadFile, 
     session: AsyncSession
 ) -> schemas.assets.Out:
     """
-    Загрузить логотип для соцсети.
+    Upload icon for social link.
     
     Args:
-        social: Провалидированный объект социальной сети
-        s3_client: Клиент S3 для загрузки
-        file: Файл изображения
-        session: Сессия БД
+        social: Validated social link object
+        s3_client: S3 client for upload
+        file: Image file
+        session: Database session
         
     Returns:
-        schemas.assets.Out: Информация о загруженном ассете
+        schemas.assets.Out: Uploaded asset info
     """
-    file_name: str = config.S3_ICON_TEMPLATE.format(
-        card_id=social.card_id, 
-        social_id=social.id
-    )
-    
-    asset: models.CardAsset = await repo.logos.add(
-        card_id=social.card_id, 
-        social_id=social.id, 
-        file_name=file_name, 
+    asset: models.Asset = await repo.logos.set(
+        social=social, 
+        file_name=file.filename, 
         session=session
     )
     
-    await s3_client.upload_file(file.file, file_name)
+    await s3_client.upload_file(
+        file=file,
+        object_name=config.S3_ICON_TEMPLATE.format(
+            card_id=social.card_id,
+            file_name=file.filename
+        )
+    )
     
-    return schemas.assets.Out.model_validate(asset, from_attributes=True)
+    return schemas.assets.Out(
+        id=asset.id,
+        card_id=social.card_id,
+        type=enums.AssetType.ICON,
+        file_name=file.filename,
+        created_at=asset.created_at
+    )

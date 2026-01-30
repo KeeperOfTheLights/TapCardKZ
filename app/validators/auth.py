@@ -1,30 +1,28 @@
 """
-Валидаторы для аутентификации.
+Authentication validators.
 
-Проверяют наличие и валидность JWT токенов.
+Check JWT token presence and validity.
 """
-# Third-party
 import jose
 from fastapi import HTTPException, Request, status
 
-# Local
 from app import utils
 from app.core import config
 
 
 def require_access_token(request: Request) -> dict:
     """
-    Проверяет наличие и валидность access token в cookies.
+    Verify access token in cookies.
     
     Args:
-        request: HTTP запрос
+        request: HTTP request
         
     Returns:
-        dict: Payload токена с card_id
+        dict: Token payload with card_id
         
     Raises:
-        HTTPException: 401 если токен отсутствует
-        HTTPException: 403 если токен недействителен
+        HTTPException: 401 if token missing
+        HTTPException: 403 if token invalid
     """
     token: str | None = request.cookies.get("Authorization")
     if not token:
@@ -44,17 +42,17 @@ def require_access_token(request: Request) -> dict:
 
 def require_admin_token(request: Request) -> dict:
     """
-    Проверяет наличие и валидность admin token в cookies.
+    Verify admin token in cookies.
     
     Args:
-        request: HTTP запрос
+        request: HTTP request
         
     Returns:
-        dict: Payload токена администратора
+        dict: Admin token payload
         
     Raises:
-        HTTPException: 401 если токен отсутствует
-        HTTPException: 403 если токен недействителен
+        HTTPException: 401 if token missing
+        HTTPException: 403 if token invalid
     """
     token: str | None = request.cookies.get("Authorization")
     if not token:

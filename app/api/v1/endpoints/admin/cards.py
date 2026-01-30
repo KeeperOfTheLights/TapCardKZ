@@ -9,8 +9,8 @@ router: APIRouter = APIRouter(prefix="/cards")
 @router.post(
     "/", 
     response_model=schemas.cards.OnCreate, 
-    summary="Создать карточку", 
-    description="Создает новую карточку. Требуется авторизация администратора"
+    summary="Create card", 
+    description="Creates a new card. Requires admin authorization"
 )
 async def create_card(
     card: schemas.cards.In,

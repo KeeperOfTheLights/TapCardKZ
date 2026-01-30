@@ -1,3 +1,8 @@
+"""
+Social link validators.
+
+Check social link existence and ownership.
+"""
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,18 +16,18 @@ async def require_social(
     session: AsyncSession
 ) -> models.CardSocial:
     """
-    Проверяет существование соцсети и принадлежность к карточке.
+    Verify social link existence and ownership.
     
     Args:
-        card_id: ID карточки-владельца
-        social_id: ID социальной сети
-        session: Сессия БД
+        card_id: Owner card ID
+        social_id: Social link ID
+        session: Database session
         
     Returns:
-        models.CardSocial: Найденная социальная сеть
+        models.CardSocial: Found social link
         
     Raises:
-        HTTPException: 404 если соцсеть не найдена или не принадлежит карточке
+        HTTPException: 404 if not found or doesn't belong to card
     """
     social: models.CardSocial | None = await repo.socials.get(
         card_id=card_id, 
@@ -44,13 +49,13 @@ async def require_social(
 
 def require_no_icon(social: models.CardSocial) -> None:
     """
-    Проверяет, что у соцсети ещё нет кастомной иконки.
+    Verify social link has no custom icon.
     
     Args:
-        social: Социальная сеть для проверки
+        social: Social link to check
         
     Raises:
-        HTTPException: 400 если иконка уже существует
+        HTTPException: 400 if icon already exists
     """
     if social.icon_asset_id:
         raise HTTPException(
