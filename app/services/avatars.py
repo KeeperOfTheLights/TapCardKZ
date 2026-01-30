@@ -35,13 +35,8 @@ async def get(
     if not avatar_asset:
         return None
     
-    return s3_client.create_presigned_url(
-        object_name=config.S3_AVATAR_TEMPLATE.format(
-            card_id=card_id,
-            file_name=avatar_asset.file_name
-        ),
-        expires_in=config.IMAGE_EXPIRE_TIME
-    )
+    file_name: str = config.S3_AVATAR_TEMPLATE.format(card_id=card_id)
+    return await s3_client.get_object_url(object_name=file_name)
 
 
 async def upload(
@@ -62,24 +57,12 @@ async def upload(
     Returns:
         schemas.assets.Out: Uploaded asset info
     """
-    asset: models.Asset = await repo.avatars.set(
-        card=card, 
-        file_name=file.filename, 
+    file_name: str = config.S3_AVATAR_TEMPLATE.format(card_id=card.id)
+    asset: models.Asset = await repo.avatars.create(
+        card_id=card.id, 
+        file_name=file_name, 
         session=session
     )
+    await s3_client.upload_file(file_obj=file, object_name=file_name)
     
-    await s3_client.upload_file(
-        file=file,
-        object_name=config.S3_AVATAR_TEMPLATE.format(
-            card_id=card.id,
-            file_name=file.filename
-        )
-    )
-    
-    return schemas.assets.Out(
-        id=asset.id,
-        card_id=card.id,
-        type=enums.AssetType.AVATAR,
-        file_name=file.filename,
-        created_at=asset.created_at
-    )
+    return schemas.assets.Out.model_validate(asset, from_attributes=True)

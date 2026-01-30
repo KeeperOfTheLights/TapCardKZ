@@ -28,34 +28,15 @@ async def get(
     Returns:
         schemas.cards.Out: Card with socials and avatar
     """
-    avatar_link: str | None = await avatars.get(
-        card_id=card.id,
-        s3_client=s3_client,
-        session=session
-    )
-    
-    socials_icons: dict = await logos.get_all(
-        card_id=card.id,
-        s3_client=s3_client,
-        session=session
-    )
-    
-    socials: list[schemas.socials.Out] = [
-        utils.utils.build_schema(
-            schemas.socials.Out,
-            social,
-            app_icon_link=socials_icons.get(social.id)
-        )
-        for social in card.socials
-    ]
-    
-    return utils.utils.build_schema(
-        schemas.cards.Out,
-        card,
-        socials=socials,
-        avatar_link=avatar_link
-    )
+    logos_dict: dict[int, str] = await logos.get_all(card_id=card.id, s3_client=s3_client, session=session)
 
+    avatar: CardAsset | None = await repo.avatars.get(card_id=card.id, session=session)
+    avatar_link: str | None = await s3_client.get_object_url(avatar.file_name) if avatar else None
+    for social in card.socials:
+        social.app_icon_link = logos_dict.get(social.icon_asset_id)
+    card.avatar_link = avatar_link
+
+    return schemas.cards.Out.model_validate(card, from_attributes=True)
 
 async def create(
     card: schemas.cards.In, 
@@ -71,27 +52,19 @@ async def create(
     Returns:
         schemas.cards.OnCreate: Created card with activation code
     """
-    code: str = utils.code.generate(config.CODE_LEN)
-    hashed_code: str = utils.code.encode(code)
-    
-    card_record: models.Card = await repo.cards.create(
-        card=card, 
-        session=session
+    card: models.Card = await repo.cards.create(card=models.Card(**card.model_dump()), session=session)
+
+    generated_code: str = utils.code.generate()
+    hashed_code: str = utils.code.encode(generated_code)
+    code: models.Code = models.Code(
+        card_id=card.id,
+        code_hash=hashed_code,
+        is_active=True
     )
-    
-    await repo.codes.create(
-        code=hashed_code, 
-        card_id=card_record.id, 
-        session=session
-    )
-    
-    return utils.utils.build_schema(
-        schemas.cards.OnCreate,
-        card_record,
-        socials=[],
-        avatar_link=None,
-        code=code
-    )
+    code: models.Code = await repo.codes.create(code=code, session=session)
+    card_schema: schemas.cards.Base = schemas.cards.Base.model_validate(card, from_attributes=True)
+
+    return utils.utils.build_schema(schemas.cards.OnCreate, card_schema, avatar_link=None, code=generated_code)
 
 
 async def update(
@@ -112,8 +85,10 @@ async def update(
     """
     updated_card: models.Card = await repo.cards.update(
         card=card, 
-        card_update=card_update, 
+        card_update=card_update.model_dump(exclude_unset=True), 
         session=session
     )
     
     return schemas.cards.Base.model_validate(updated_card)
+
+    

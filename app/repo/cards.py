@@ -17,7 +17,7 @@ async def get(
     card = result.scalar_one_or_none()
     return card
 
-async def add(
+async def create(
     *, 
     card: models.Card, 
     session: AsyncSession
@@ -25,4 +25,18 @@ async def add(
     session.add(card)
     await session.commit()
     await session.refresh(card)
+    return card
+
+async def update(
+    *,
+    card: models.Card,
+    card_update: dict,
+    session: AsyncSession
+) -> models.Card:
+    for key, value in card_update.items():
+        setattr(card, key, value)
+    
+    await session.commit()
+    await session.refresh(card)
+
     return card

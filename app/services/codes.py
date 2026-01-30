@@ -55,13 +55,18 @@ async def regenerate(
     Returns:
         schemas.codes.RegenerateOut: New activation code
     """
-    code: str = utils.code.generate(config.CODE_LEN)
-    hashed_code: str = utils.code.encode(code)
+    generated_code: str = utils.code.generate()
+    hashed_code: str = utils.code.encode(generated_code)
     
-    await repo.codes.deactivate_all(card_id=card.id, session=session)
-    await repo.codes.create(code=hashed_code, card_id=card.id, session=session)
+    await repo.codes.deactivate(card_id=card.id, session=session)
+    code: models.Code = models.Code(
+        card_id=card.id,
+        code_hash=hashed_code,
+        is_active=True
+    )
+    await repo.codes.create(code=code, session=session)
     
     return schemas.codes.RegenerateOut(
         card_id=card.id,
-        code=code
+        code=generated_code
     )

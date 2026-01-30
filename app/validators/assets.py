@@ -35,3 +35,4 @@ def validate_image(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Not allowed file type, allowed types: {', '.join(allowed_types)}"
         )
+

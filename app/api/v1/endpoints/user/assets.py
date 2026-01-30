@@ -81,7 +81,7 @@ async def upload_logo(
     """
     validators.assets.validate_image(file)
     
-    social = await validators.socials.require_social(
+    social: models.CardSocial = await validators.socials.require_social(
         card_id=token["card_id"], 
         social_id=social_id, 
         session=session

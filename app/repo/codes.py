@@ -3,7 +3,7 @@ from app.core import models
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
-async def add(
+async def create(
     *, 
     code: models.Code, 
     session: AsyncSession

@@ -27,24 +27,9 @@ async def create(
     Returns:
         schemas.socials.Out: Created social link
     """
-    social_record: models.CardSocial = await repo.socials.create(
-        card=card, 
-        social=social, 
-        session=session
-    )
+    card_social: models.socials.Out = await repo.socials.create(card=card, social=social, session=session)
     
-    return schemas.socials.Out(
-        id=social_record.id,
-        card_id=card.id,
-        type=social_record.type,
-        url=social_record.url,
-        label=social_record.label,
-        order_id=social_record.order_id,
-        icon_asset_id=social_record.icon_asset_id,
-        is_visible=social_record.is_visible,
-        created_at=social_record.created_at,
-        app_icon_link=None
-    )
+    return schemas.socials.Out.model_validate(card_social, from_attributes=True)
 
 
 async def delete(
@@ -62,18 +47,8 @@ async def delete(
         session: Database session
         s3_client: S3 client for deleting icon
     """
-    if social.icon_asset_id:
-        icon: models.Asset | None = await repo.logos.get(
-            asset_id=social.icon_asset_id, 
-            session=session
-        )
-        if icon:
-            await s3_client.delete_file(
-                object_name=config.S3_ICON_TEMPLATE.format(
-                    card_id=card.id,
-                    file_name=icon.file_name
-                )
-            )
-            await repo.logos.delete(asset=icon, session=session)
+    await repo.socials.delete(card=card, social_id=social.id, session=session)
     
-    await repo.socials.delete(social=social, session=session)
+    if social.icon_asset_id:
+        file_name: str = config.S3_ICON_TEMPLATE.format(card_id=card.id, social_id=social.id)
+        await s3_client.delete_asset(file_name=file_name)

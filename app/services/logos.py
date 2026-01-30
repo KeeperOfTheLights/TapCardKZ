@@ -28,32 +28,20 @@ async def get_all(
     Returns:
         dict[int, str]: Mapping of social_id to icon URL
     """
-    icons: list[models.Asset] = await repo.logos.get_all(
-        card_id=card_id, 
-        session=session
-    )
-    
-    socials: list[models.CardSocial] = await repo.socials.get_all(
-        card_id=card_id, 
-        session=session
-    )
-    
-    icon_dict: dict[int, str] = {}
-    for icon in icons:
-        social = next(
-            (s for s in socials if s.icon_asset_id == icon.id), 
-            None
+    # Get socials with their icon asset IDs
+    asset_names: dict[int, str] = await repo.logos.get_all(card_id=card_id, session=session)
+    if not asset_names:
+        return {}
+    asset_urls: dict[int, str] = {
+        asset_id: await s3_client.get_object_url(
+            asset_names.get(asset_id)
         )
-        if social:
-            icon_dict[social.id] = s3_client.create_presigned_url(
-                object_name=config.S3_ICON_TEMPLATE.format(
-                    card_id=card_id,
-                    file_name=icon.file_name
-                ),
-                expires_in=config.IMAGE_EXPIRE_TIME
-            )
+        for asset_id in asset_names.keys()
+    }
     
-    return icon_dict
+    return asset_urls
+
+
 
 
 async def upload(
@@ -74,24 +62,19 @@ async def upload(
     Returns:
         schemas.assets.Out: Uploaded asset info
     """
-    asset: models.Asset = await repo.logos.set(
-        social=social, 
-        file_name=file.filename, 
+    file_name: str = config.S3_ICON_TEMPLATE.format(
+        card_id=social.card_id,
+        social_id=social.id
+    )
+    asset: models.CardAsset = await repo.logos.create(
+        card_id=social.card_id, 
+        social_id=social.id,
+        file_name=file_name, 
         session=session
     )
-    
     await s3_client.upload_file(
-        file=file,
-        object_name=config.S3_ICON_TEMPLATE.format(
-            card_id=social.card_id,
-            file_name=file.filename
-        )
+        file_obj=file,
+        object_name=file_name
     )
     
-    return schemas.assets.Out(
-        id=asset.id,
-        card_id=social.card_id,
-        type=enums.AssetType.ICON,
-        file_name=file.filename,
-        created_at=asset.created_at
-    )
+    return schemas.assets.Out.model_validate(asset, from_attributes=True)
