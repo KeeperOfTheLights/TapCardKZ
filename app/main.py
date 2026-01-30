@@ -10,8 +10,13 @@ from app.lifespan import lifespan
 from app.api.v1 import router as v1_router
 
 
+from fastapi.staticfiles import StaticFiles
+
+
 def create_app() -> FastAPI:
     app = FastAPI(root_path="/api", lifespan=lifespan)
+    
+    app.mount("/admin", StaticFiles(directory="app/static/admin", html=True), name="admin")
 
     app.include_router(v1_router)
 

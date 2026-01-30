@@ -6,6 +6,27 @@ from app.api.v1.dependencies import get_session, verify_access_token
 
 router: APIRouter = APIRouter(prefix="/cards")
 
+@router.get(
+    "/me/", 
+    response_model=schemas.cards.Out,
+    summary="Get my card",
+    description="Returns full card information including social links and avatar.",
+)
+async def get_me(
+    request: Request,
+    token: dict = Depends(verify_access_token),
+    session: AsyncSession = Depends(get_session)
+) -> schemas.cards.Out:
+    """
+    Get my card.
+    """
+    card = await validators.cards.require_card(card_id=token["card_id"], session=session)
+    
+    return await services.cards.get(
+        card=card,
+        s3_client=request.app.state.s3_client,
+        session=session
+    )
 
 @router.get(
     "/{id}/", 
