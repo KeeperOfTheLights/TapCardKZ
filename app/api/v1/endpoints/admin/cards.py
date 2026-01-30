@@ -6,7 +6,12 @@ from app import schemas, services
 
 router: APIRouter = APIRouter(prefix="/cards")
 
-@router.post("/", response_model=schemas.cards.OnCreate)
+@router.post(
+    "/", 
+    response_model=schemas.cards.OnCreate, 
+    summary="Создать карточку", 
+    description="Создает новую карточку. Требуется авторизация администратора"
+)
 async def create_card(
     card: schemas.cards.In,
     session: AsyncSession = Depends(get_session),

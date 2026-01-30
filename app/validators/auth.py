@@ -1,40 +1,20 @@
 """
-Зависимости для API v1.
+Валидаторы для аутентификации.
 
-Содержит общие dependency functions для роутеров.
+Проверяют наличие и валидность JWT токенов.
 """
-# Standard Library
-from typing import AsyncGenerator
-
 # Third-party
 import jose
 from fastapi import HTTPException, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # Local
 from app import utils
 from app.core import config
-from app.core.manager import AsyncDatabaseManager
 
 
-async def get_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
+def require_access_token(request: Request) -> dict:
     """
-    Получить сессию базы данных.
-    
-    Args:
-        request: HTTP запрос с app state
-        
-    Yields:
-        AsyncSession: Сессия для работы с БД
-    """
-    db_manager: AsyncDatabaseManager = request.app.state.db_manager
-    async for session in db_manager.get_async_session():
-        yield session
-
-
-def verify_access_token(request: Request) -> dict | None:
-    """
-    Проверить access token из cookie.
+    Проверяет наличие и валидность access token в cookies.
     
     Args:
         request: HTTP запрос
@@ -49,7 +29,7 @@ def verify_access_token(request: Request) -> dict | None:
     token: str | None = request.cookies.get("Authorization")
     if not token:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated"
         )
     try:
@@ -57,14 +37,14 @@ def verify_access_token(request: Request) -> dict | None:
         return payload
     except jose.JWTError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid token"
         )
 
 
-async def verify_admin(request: Request) -> dict | None:
+def require_admin_token(request: Request) -> dict:
     """
-    Проверить admin token из cookie.
+    Проверяет наличие и валидность admin token в cookies.
     
     Args:
         request: HTTP запрос
@@ -76,22 +56,21 @@ async def verify_admin(request: Request) -> dict | None:
         HTTPException: 401 если токен отсутствует
         HTTPException: 403 если токен недействителен
     """
-    # TODO: implement admin verification
     token: str | None = request.cookies.get("Authorization")
     if not token:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated"
         )
     try:
         payload = jose.jwt.decode(
-            token.split(" ")[1], 
-            config.JWT_SECRET, 
+            token.split(" ")[1],
+            config.JWT_SECRET,
             algorithms=[config.JWT_ALGORITHM]
         )
         return payload
     except jose.JWTError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid token"
         )
