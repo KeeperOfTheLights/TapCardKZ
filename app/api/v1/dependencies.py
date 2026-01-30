@@ -6,11 +6,12 @@ Contains common dependency functions for routers.
 from typing import AsyncGenerator
 
 import jose
-from fastapi import HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import utils
-from app.core import config
+from app.core.config import config
 from app.core.manager import AsyncDatabaseManager
 
 
@@ -59,36 +60,25 @@ def verify_access_token(request: Request) -> dict | None:
         )
 
 
-async def verify_admin(request: Request) -> dict | None:
+async def verify_admin(
+    api_key: str | None = Depends(APIKeyHeader(name="X-Admin-Key", auto_error=False))
+) -> None:
     """
-    Verify admin token from cookie.
+    Verify admin API key from header.
     
-    Args:
-        request: HTTP request
-        
-    Returns:
-        dict: Admin token payload
-        
+    In Swagger UI, click "Authorize" button and enter the admin key.
+    
     Raises:
-        HTTPException: 401 if token is missing
-        HTTPException: 403 if token is invalid
+        HTTPException: 401 if key is missing
+        HTTPException: 403 if key is invalid
     """
-    # TODO: implement admin verification
-    token: str | None = request.cookies.get("Authorization")
-    if not token:
+    if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Not authenticated"
+            detail="Admin key required. Use X-Admin-Key header."
         )
-    try:
-        payload = jose.jwt.decode(
-            token.split(" ")[1], 
-            config.JWT_SECRET, 
-            algorithms=[config.JWT_ALGORITHM]
-        )
-        return payload
-    except jose.JWTError:
+    if api_key != config.ADMIN_SECRET:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 
-            detail="Invalid token"
+            detail="Invalid admin key"
         )

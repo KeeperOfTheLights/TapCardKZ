@@ -26,6 +26,8 @@ class Config(BaseSettings):
     S3_ICON_TEMPLATE: str
 
     CODE_LEN: int
+
+    ADMIN_SECRET: str
     
     @property
     def DATABASE_URL(self) -> str:

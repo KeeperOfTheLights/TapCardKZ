@@ -1,6 +1,8 @@
 """
 General utilities.
 """
+from typing import Type
+
 from pydantic import BaseModel
 
 def build_schema(

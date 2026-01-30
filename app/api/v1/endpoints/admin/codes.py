@@ -21,7 +21,7 @@ router: APIRouter = APIRouter(prefix="/codes")
 async def regenerate_code(
     code: schemas.codes.RegenerateIn,
     session: AsyncSession = Depends(get_session),
-    # admin: dict = Depends(verify_admin)
+    admin: dict = Depends(verify_admin)
 ) -> schemas.codes.RegenerateOut:
     """
     Regenerate activation code for a card.
