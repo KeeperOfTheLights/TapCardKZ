@@ -1,50 +1,54 @@
+"""
+Social link service.
 
-from app import schemas, repo
-from app.core import models
-from app.s3 import S3Client
+Contains business logic for creating and deleting social links.
+"""
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from sqlalchemy import delete   
+
+from app import repo, schemas
+from app.core import models
+from app.core.config import config
+from app.s3.client import S3Client
 
 
-async def create(   
-    *, 
-    card_id: int,
-    social: schemas.socials.In,
+async def create(
+    card: models.Card, 
+    social: schemas.socials.In, 
     session: AsyncSession
 ) -> schemas.socials.Out:
-    # 1. Загружаем карту сразу вместе с соцсетями
-    card: models.Card | None = await repo.cards.get(card_id=card_id, session=session)
+    """
+    Create social link for card.
     
-    if not card:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Card with id {card_id} not found"
-        )
+    Args:
+        card: Validated card object
+        social: Social link data
+        session: Database session
+        
+    Returns:
+        schemas.socials.Out: Created social link
+    """
     card_social: models.socials.Out = await repo.socials.create(card=card, social=social, session=session)
     
     return schemas.socials.Out.model_validate(card_social, from_attributes=True)
 
+
 async def delete(
-    *,
-    card_id: int,
-    social_id: int,
-    session: AsyncSession,
+    social: models.CardSocial, 
+    card: models.Card, 
+    session: AsyncSession, 
     s3_client: S3Client
 ) -> None:
-    exist: bool = await repo.socials.is_exist(card_id=card_id, social_id=social_id, session=session)
-    if not exist:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Social does not exist")
-
-    social: models.CardSocial | None = await repo.socials.get(card_id=card_id, social_id=social_id, session=session)
-    if social.card_id != card_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This social doesn't belong to this card")
-
-
-    card: models.Card = await repo.cards.get(card_id=card_id, session=session)
-    is_deleted: bool = await repo.socials.delete(card=card, social_id=social_id, session=session)
+    """
+    Delete social link and associated icon.
+    
+    Args:
+        social: Validated social link object
+        card: Card object
+        session: Database session
+        s3_client: S3 client for deleting icon
+    """
+    await repo.socials.delete(card=card, social_id=social.id, session=session)
     
     if social.icon_asset_id:
-        file_name: str = config.S3_ICON_TEMPLATE.format(card_id=card_id, social_id=social_id)
+        file_name: str = config.S3_ICON_TEMPLATE.format(card_id=card.id, social_id=social.id)
         await s3_client.delete_asset(file_name=file_name)
-    

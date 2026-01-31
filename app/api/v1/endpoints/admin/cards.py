@@ -6,10 +6,15 @@ from app import schemas, services
 
 router: APIRouter = APIRouter(prefix="/cards")
 
-@router.post("/", response_model=schemas.cards.OnCreate)
+@router.post(
+    "/", 
+    response_model=schemas.cards.OnCreate, 
+    summary="Create card", 
+    description="Creates a new card. Requires admin authorization"
+)
 async def create_card(
     card: schemas.cards.In,
     session: AsyncSession = Depends(get_session),
-    #admin: dict = Depends(verify_admin)
+    admin: dict = Depends(verify_admin)
 ) -> schemas.cards.OnCreate:
     return await services.cards.create(card=card, session=session)

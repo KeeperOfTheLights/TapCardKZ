@@ -3,7 +3,7 @@ from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def get(
+async def get_all(
     *, 
     card_id: int,
     session: AsyncSession
@@ -17,7 +17,7 @@ async def get(
     assets = result.scalars().all()
     return {asset.id: asset.file_name for asset in assets}
 
-async def add(
+async def create(
     *, 
     card_id: int,
     social_id: int,

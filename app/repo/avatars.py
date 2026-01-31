@@ -17,7 +17,7 @@ async def get(
     return asset
 
 
-async def add(
+async def create(
     *, 
     card_id: int,
     file_name: str,

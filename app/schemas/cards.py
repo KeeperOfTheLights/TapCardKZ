@@ -1,12 +1,19 @@
-from datetime import datetime
-import re
+"""
+Card schemas.
 
-from pydantic import BaseModel, field_validator, Field, ConfigDict
+Used for validating input data and formatting API responses.
+"""
+import re
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.socials import Out as SocialOut
 
 
 class Validators(BaseModel):
+    """Base validators for card fields."""
+    
     phone: str | None = None
     email: str | None = None
     website: str | None = None
@@ -39,42 +46,117 @@ class Validators(BaseModel):
             raise ValueError("Website must start with http:// or https://")
         return v
 
+
 class In(Validators):
-    name: str = Field(..., min_length=3, max_length=20, example="John Doe") 
-    title: str = Field(..., min_length=5, max_length=75, example="Engineer")
-    description: str = Field(..., min_length=10, max_length=255, example="Software Engineer using Python and JavaScript")
-    phone: str = Field(..., example="77715229969")
-    email: str = Field(..., example="john.doe@example.com")
-    website: str | None = Field(None, example="https://johndoe.com")
-    city: str = Field(..., min_length=3, max_length=20, example="Almaty")
+    """Schema for creating a new card."""
+    
+    name: str = Field(
+        ..., 
+        min_length=3, 
+        max_length=20, 
+        description="Card owner name",
+        json_schema_extra={"example": "John Doe"}
+    ) 
+    title: str = Field(
+        ..., 
+        min_length=5, 
+        max_length=75, 
+        description="Job title or profession",
+        json_schema_extra={"example": "Software Engineer"}
+    )
+    description: str = Field(
+        ..., 
+        min_length=10, 
+        max_length=255, 
+        description="Brief description",
+        json_schema_extra={"example": "Software Engineer using Python and JavaScript"}
+    )
+    phone: str = Field(
+        ..., 
+        description="Phone number (format: 7XXXXXXXXXX)",
+        json_schema_extra={"example": "77715229969"}
+    )
+    email: str = Field(
+        ..., 
+        description="Email address",
+        json_schema_extra={"example": "john.doe@example.com"}
+    )
+    website: str | None = Field(
+        None, 
+        description="Personal website (optional)",
+        json_schema_extra={"example": "https://johndoe.com"}
+    )
+    city: str = Field(
+        ..., 
+        min_length=3, 
+        max_length=20, 
+        description="City",
+        json_schema_extra={"example": "Almaty"}
+    )
+
 
 class Patch(Validators):
-    name: str | None = Field(None, min_length=3, max_length=20, example="Jason Statham")
-    title: str | None = Field(None, min_length=5, max_length=75, example="Actor")
-    description: str | None = Field(None, min_length=10, max_length=255, example="Actor from the movie Transporter")
-    phone: str | None = None
-    email: str | None = None
-    website: str | None = None
-    city: str | None = Field(None, min_length=3, max_length=20, example="Los Angeles")
+    """Schema for partial card update (PATCH)."""
+    
+    name: str | None = Field(
+        None, 
+        min_length=3, 
+        max_length=20, 
+        description="Card owner name",
+        json_schema_extra={"example": "Jason Statham"}
+    )
+    title: str | None = Field(
+        None, 
+        min_length=5, 
+        max_length=75, 
+        description="Job title or profession",
+        json_schema_extra={"example": "Actor"}
+    )
+    description: str | None = Field(
+        None, 
+        min_length=10, 
+        max_length=255, 
+        description="Brief description",
+        json_schema_extra={"example": "Actor from the movie Transporter"}
+    )
+    phone: str | None = Field(None, description="Phone number (format: 7XXXXXXXXXX)")
+    email: str | None = Field(None, description="Email address")
+    website: str | None = Field(None, description="Personal website")
+    city: str | None = Field(
+        None, 
+        min_length=3, 
+        max_length=20, 
+        description="City",
+        json_schema_extra={"example": "Los Angeles"}
+    )
+
 
 class Base(BaseModel):
-    id: int 
-    name: str
-    title: str
-    description: str    
-    phone: str
-    email: str
-    website: str
-    city: str
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-
+    """Base card schema with full data."""
+    
     model_config = ConfigDict(from_attributes=True)
+    
+    id: int = Field(..., description="Unique card ID")
+    name: str = Field(..., description="Owner name")
+    title: str = Field(..., description="Job title")
+    description: str = Field(..., description="Description")
+    phone: str = Field(..., description="Phone number")
+    email: str = Field(..., description="Email")
+    website: str = Field(..., description="Website")
+    city: str = Field(..., description="City")
+    is_active: bool = Field(..., description="Whether card is active")
+    created_at: datetime = Field(..., description="Creation date")
+    updated_at: datetime = Field(..., description="Last update date")
+
 
 class Out(Base):
-    socials: list[SocialOut] = []
-    avatar_link: str | None
+    """Response schema for getting a card."""
+    
+    socials: list[SocialOut] = Field(default=[], description="List of social links")
+    avatar_link: str | None = Field(None, description="Avatar URL")
+
 
 class OnCreate(Out):
-    code: str
+    """Response schema when creating a card (includes activation code)."""
+    
+    code: str = Field(..., description="Activation code for card editing")
