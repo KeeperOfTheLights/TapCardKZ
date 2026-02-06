@@ -1,29 +1,39 @@
 services:
+  # Frontend (React + Nginx)
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Backend API (FastAPI)
   api:
     build: .
     container_name: fastapi
     environment:
       - PYTHONPATH=/app 
       - PYTHONDONTWRITEBYTECODE=1
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - DB_HOST=db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
+  # PostgreSQL Database
   db:
-    image: postgres:15-alpine # 18 версии пока нет, лучше использовать стабильную 15 или 16
+    image: postgres:15-alpine
     container_name: postgres
     env_file:
       - .env
     environment:
-      # Используем переменные напрямую из вашего .env файла
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
@@ -38,6 +48,7 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # PgAdmin (optional, for DB management)
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
