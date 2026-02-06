@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import schemas, services, validators
 from app.api.v1.dependencies import get_session, verify_access_token
+from app.core import models
 from app.s3.client import S3Client
 
 router: APIRouter = APIRouter(prefix="/assets")
@@ -34,7 +35,7 @@ async def upload_avatar(
     
     Overwrites existing avatar if present.
     """
-    validators.assets.validate_image(file)
+    await validators.assets.validate_image(file)
     
     card = await validators.cards.require_card(
         card_id=token["card_id"], 
@@ -79,7 +80,7 @@ async def upload_logo(
     
     Cannot upload icon if one already exists.
     """
-    validators.assets.validate_image(file)
+    await validators.assets.validate_image(file)
     
     social: models.CardSocial = await validators.socials.require_social(
         card_id=token["card_id"], 

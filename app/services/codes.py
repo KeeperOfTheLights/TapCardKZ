@@ -3,7 +3,7 @@ Activation code service.
 
 Contains business logic for code redemption and regeneration.
 """
-from fastapi import Response
+from fastapi import Request, Response
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,25 +13,37 @@ from app.core.config import config
 
 
 async def redeem(
-    code_record: models.Code, 
+    code_record: models.Code,
+    request: Request,
     response: Response
 ) -> schemas.codes.Out:
     """
     Redeem code and return JWT token.
     
+    Checks if valid token already exists in cookies. If yes - reuses it.
+    If no - creates new token.
+    
     Args:
         code_record: Validated code object
+        request: HTTP request (for reading cookies)
         response: HTTP response for setting cookie
         
     Returns:
         schemas.codes.Out: Token and card ID
     """
-    token: str = utils.token.create(card_id=code_record.card_id)
+    # Получаем существующий токен или создаём новый
+    token, is_new = utils.token.get_or_create(
+        request=request,
+        card_id=code_record.card_id
+    )
     
+    # Устанавливаем токен в куки (обновляем время жизни даже для существующего)
     response.set_cookie(
         key="Authorization",
         value=f"Bearer {token}",
-        expires=config.JWT_EXPIRE_MINUTES * 60
+        expires=config.JWT_EXPIRE_MINUTES * 60,
+        httponly=True,
+        samesite="lax"
     )
     
     return schemas.codes.Out(
