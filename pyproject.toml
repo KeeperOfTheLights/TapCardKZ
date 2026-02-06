@@ -19,6 +19,7 @@ python-dotenv = "*"
 aioboto3 = "13.2.0"
 python-jose = {extras = ["cryptography"], version = "*"}
 python-multipart = "*"
+redis = "^5.0.0"
 
 [build-system]
 requires = ["poetry-core"]

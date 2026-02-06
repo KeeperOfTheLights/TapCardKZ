@@ -7,6 +7,9 @@ class Config(BaseSettings):
     DB_HOST: str
     DB_PORT: int
 
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
+
     S3_ACCESS_KEY: str
     S3_SECRET_KEY: str
     S3_DOMAIN: str
@@ -32,6 +35,10 @@ class Config(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     model_config: SettingsConfigDict = SettingsConfigDict(
         env_file=".env",

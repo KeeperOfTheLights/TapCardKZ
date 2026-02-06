@@ -1,1 +1,1 @@
-from . import db, s3
+from . import db, s3, redis
