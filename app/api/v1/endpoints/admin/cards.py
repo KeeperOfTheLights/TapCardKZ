@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies import get_session, verify_admin
@@ -14,7 +14,6 @@ router: APIRouter = APIRouter(prefix="/cards")
 )
 async def create_card(
     card: schemas.cards.In,
-    session: AsyncSession = Depends(get_session),
-    admin: dict = Depends(verify_admin)
+    session: AsyncSession = Depends(get_session)
 ) -> schemas.cards.OnCreate:
     return await services.cards.create(card=card, session=session)

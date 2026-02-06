@@ -1,5 +1,5 @@
 services:
-  api:
+  fastapi:
     build: .
     container_name: fastapi
     environment:
@@ -17,13 +17,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    depends_on:
+      - fastapi
+
   db:
-    image: postgres:15-alpine # 18 версии пока нет, лучше использовать стабильную 15 или 16
+    image: postgres:15-alpine
     container_name: postgres
     env_file:
       - .env
     environment:
-      # Используем переменные напрямую из вашего .env файла
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
